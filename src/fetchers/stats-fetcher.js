@@ -14,6 +14,20 @@ import {
 
 dotenv.config();
 
+const externalRepoOwner = 'XueFuzhao';
+const externalRepoName = 'InstructionWild';
+
+const fetchExternalRepoStars = async () => {
+  const url = `https://api.github.com/repos/${externalRepoOwner}/${externalRepoName}`;
+  try {
+    const response = await axios.get(url);
+    return response.data.stargazers_count;
+  } catch (err) {
+    console.error(err);
+    return 0;
+  }
+};
+
 // GraphQL queries.
 const GRAPHQL_REPOS_FIELD = `
   repositories(first: 100, ownerAffiliations: OWNER, orderBy: {direction: DESC, field: STARGAZERS}, after: $after) {
@@ -313,6 +327,10 @@ const fetchStats = async (
     .reduce((prev, curr) => {
       return prev + curr.stargazers.totalCount;
     }, 0);
+
+  const externalStars = await fetchExternalRepoStars();
+  stats.totalStars += externalStars;
+  user.repositories.totalCount += 1;
 
   stats.rank = calculateRank({
     all_commits: include_all_commits,
